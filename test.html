@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>sorting test</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <script src="util.js"></script>
+    <script src="data.json"></script>
+
+    <script src="exchange/BubbleSort.js"></script>
+    <script src="exchange/CocktailShakerSort.js"></script>
+    <script src="exchange/OddEvenSort.js"></script>
+    <script src="exchange/CombSort.js"></script>
+    <script src="exchange/GnomeSort.js"></script>
+    <script src="exchange/LLQuickSort.js"></script>
+    <script src="exchange/LRQuickSort.js"></script>
+    <script src="exchange/StableQuickSort.js"></script>
+
+    <script src="selection/SelectionSort.js"></script>
+    <script src="selection/DoubleSelectionSort.js"></script>
+    <script src="selection/MaxHeapSort.js"></script>
+
+    <script src="insertion/InsertionSort.js"></script>
+    <script src="insertion/BinaryInsertionSort.js"></script>
+    <script src="insertion/ShellSort.js"></script>
+
+    <script src="merge/MergeSort.js"></script>
+
+    <script src="distribution/LSDRadixSort.js"></script>
+    <script src="distribution/MSDRadixSort.js"></script>
+    <script src="distribution/InPlaceLSDRadixSort.js"></script>
+    <script src="distribution/BinaryQuickSort.js"></script>
+    <script src="distribution/CountingSort.js"></script>
+    <script src="distribution/InPlaceCountingSort.js"></script>
+
+    <!-- <script src="bogo/BogoSort.js"></script>
+    <script src="bogo/BubbleBogoSort.js"></script>
+    <script src="bogo/ExchangeBogoSort.js"></script>
+    <script src="bogo/LessBogoSort.js"></script>
+    <script src="bogo/CombBogoSort.js"></script> -->
+
+    <script src="impractical/StoogeSort.js"></script>
+
+    <script>
+      let analytics = {
+        log: () => {
+          let output = {};
+          for (let i in analytics){
+            if (typeof analytics[i] !== "function"){
+              //console.log(`${stat}: ${analytics[stat]}`);
+              output[i] = analytics[i];
+              analytics[i] = 0;
+            }
+          }
+          return output;
+        },
+        comparisons: 0,
+        swaps: 0,
+        mainwrites: 0,
+        auxwrites: 0
+      };
+
+      const tabIDs = [
+        "#output,#tableoptions",
+        "#linegraph,#linegraphoptions",
+        "#bargraph,#bargraphoptions"
+      ];
+      function getRandomColor(a){
+        let r, g, b;
+        r = Math.floor(Math.random()*256);
+        g = Math.floor(Math.random()*256);
+        b = Math.floor(Math.random()*256);
+        return `rgba(${r},${g},${b},${a})`;
+      }
+      function getRandomPresetColor(a){
+        let index = Math.floor(Math.random()*colorpresets.length);
+        return `${colorpresets[index]}`;
+        //${Math.round(a*255).toString(16)}
+      }
+      function showTab(tab){
+        $('#tabs *').each(function(index){
+          let currentTab = $(`#tabs *:nth-child(${index+1})`)
+          if (currentTab.attr('id') === tab){
+            currentTab.addClass('active');
+            $(tabIDs[index]).show();
+          } else {
+            currentTab.removeClass('active');
+            $(tabIDs[index]).hide();
+          }
+        });
+      }
+      function initTable(){
+        $('#output').html('<tr>\
+          <th style="width:18%">Algorithm</th>\
+          <th style="width:7%"><i>N</i></th>\
+          <th style="width:10%">Shuffle</th>\
+          <th style="width:12.5%">Comparisons</th>\
+          <th style="width:12.5%">Swaps</th>\
+          <th style="width:15%">Writes to main</th>\
+          <th style="width:15%">Writes to aux</th>\
+          <th style="width:10%">Time (ms)</th>\
+        </tr>');
+      }
+      function initGraph(context,type,labels){
+        return new Chart(context, {
+          type: type,
+          data: {
+            labels: labels,
+            datasets: []
+          },
+          options: {
+            scales: {
+              yAxes: [{
+                display: true,
+                type: 'logarithmic'
+              }]
+            }
+          }
+        });
+      }
+    </script>
+
+    <style>
+      body {
+        font-family: "Helvetica Neue";
+      }
+      select, button {
+        margin: 2px;
+      }
+      #output {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th, td {
+        border: 1px solid gray;
+        font-size: 0.8em;
+        padding: 1px 5px;
+      }
+      tr:nth-child(even){
+        background-color: #f2f2f2;
+      }
+
+      #tabs * {
+        margin: 0;
+        padding: 2px 10px;
+      }
+      #tabs *.active {
+        color: gray;
+      }
+      #tabs {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="tabs">
+      <button id="tabletab" class="active" onclick="showTab('tabletab')">Table</button>
+      <button id="linegraphtab" onclick="showTab('linegraphtab')">Line Graph</button>
+      <button id="bargraphtab" onclick="showTab('bargraphtab')">Bar Graph</button>
+    </div><hr>
+
+    <!-- default options -->
+    <select id="sorttype">
+      <optgroup label="Sorting algorithms"></optgroup>
+      <optgroup label="Fixed complexities"></optgroup>
+    </select>
+    <input type="number" placeholder="Length" id="length" style="width:60px">
+    <input type="number" placeholder="Secondary" id="secondary" style="width:80px">
+    <select id="shuffle"></select><hr>
+
+    <!-- table options -->
+    <section id="tableoptions">
+      <button id="addtable" class="tableoptions">Add to table</button>
+      <button onclick="initTable()" class="tableoptions">Clear table</button>
+    </section>
+
+    <!-- line graph options -->
+    <section id="linegraphoptions">
+      <select id="datatype">
+        <option value="comparisons">Comparisons</option>
+        <option value="swaps">Swaps</option>
+        <option value="mainwrites">Writes to main array</option>
+        <option value="auxwrites">Writes to auxiliary array</option>
+        <option value="time">Time</option>
+      </select>
+      <input type="number" placeholder="Averages" id="averages" style="width:75px">
+      <input checked type="checkbox" id="loglin">Logarithmic<br>
+      <input type="color" id="linegraphcolor" style="height:17px" value="#FF0000">
+      <button id="addgraph">Add to graph</button>
+      <button id="cleargraph">Clear graph</button>
+    </section>
+
+    <!-- bar graph options -->
+    <section id="bargraphoptions">
+      <input type="color" id="bargraphcolor" style="height:17px" value="#FF0000">
+      <button id="addbar">Add to graph</button>
+      <button id="clearbars">Clear graph</button>
+    </section><hr>
+
+    <table id="output"></table>
+    <canvas id="linegraph"></canvas>
+    <canvas id="bargraph"></canvas>
+    <script>
+      let labelVals = [];
+      for (let i = 2; i <= 32768; i=i*2){
+        labelVals.push(i);
+      }
+      const barLabels = ["Comparisons","Swaps","Writes to main array","Writes to aux array","Time"];
+
+      let linectx = document.getElementById('linegraph').getContext('2d');
+      let barctx = document.getElementById('bargraph').getContext('2d');
+      let linegraph = initGraph(linectx,'line',labelVals);
+      let bargraph = initGraph(barctx,'bar',barLabels);
+
+      initTable();
+      showTab('tabletab');
+
+      for (let i in window){
+        if (i.includes("Sort")){
+          $('#sorttype optgroup:nth-child(1)').append(`<option ${i=="LRQuickSort" ? "selected" : ""} value="${i}">${i}</option>`);
+        }
+      }
+      for (let i in complexities){
+        $('#sorttype optgroup:nth-child(2)').append(`<option value="${i}">${i}</option>`);
+      }
+      for (let i in shuffle){
+        $('#shuffle').append(`<option value="${i}">${i}</option>`);
+      }
+
+      $('#addtable').click(() => {
+        console.clear();
+        let sorttype = $('#sorttype').val();
+        let shuffletype = $('#shuffle').val();
+        let length = Math.max(Math.round($('#length').val()),1);
+        let secondary = Math.max(Math.round($('#secondary').val()),2);
+        let list = [];
+        let t0, t1;
+
+        if (sorttype.includes("Sort")){
+          list = shuffle[shuffletype](length);
+          console.log("shuffled array",list);
+          t0 = performance.now();
+          window[sorttype](list,secondary);
+          t1 = performance.now();
+        } else {
+          t0 = 0, t1 = 5000;
+          complexities[sorttype](length);
+        }
+
+        let sorted = true;
+        for (let i = 0; i < list.length-1; i++){
+          if (list[i] > list[i+1]){
+            sorted = false;
+            alert(`The sort was unsuccessful; indices ${i} and ${i+1} are out of order!`);
+            console.log("failed array",list);
+            break;
+          }
+        }
+        if (sorted){
+          let data = analytics.log();
+          $('#output').append(`<tr><td>${sorttype}</td><td>${length}</td><td>${shuffletype}</td><td>${data.comparisons}</td><td>${data.swaps}</td><td>${data.mainwrites}</td><td>${data.auxwrites}</td><td>${(t1-t0).toFixed(1)}</td></tr>`);
+          console.log("sorted array",list);
+        }
+      });
+
+      $('#addgraph').click(() => {
+        let sorttype = $('#sorttype').val();
+        let shuffletype = $('#shuffle').val();
+        let datatype = $('#datatype').val();
+        let secondary = Math.max(Math.round($('#secondary').val()),2);
+        let averages = Math.max(Math.round($('#averages').val()),1);
+        let color = $('#linegraphcolor').val()+"80"; // alpha 0.5
+        let tempData = [];
+
+        for (let j = 0; j < averages; j++){
+          for (let i = 0; i < labelVals.length; i++){
+            let t0, t1;
+            if (sorttype.includes("Sort")){
+              let list = shuffle[shuffletype](labelVals[i]);
+              t0 = performance.now();
+              window[sorttype](list,secondary);
+              t1 = performance.now();
+            } else {
+              t0 = 0, t1 = 5000;
+              complexities[sorttype](labelVals[i]);
+            }
+            let data = analytics.log();
+            tempData[i] = tempData[i] ? tempData[i] : 0;
+            tempData[i] += datatype !== "time" ? data[datatype] : Math.round((t1-t0)*1000);
+          }
+        }
+        for (let j = 0; j < tempData.length; j++){
+          tempData[j] /= averages;
+        }
+        linegraph.data.datasets.push({
+          label: sorttype+", "+shuffletype,
+          data: tempData,
+          borderColor: color,
+          borderWidth: 4,
+          fill: false
+        });
+        linegraph.update();
+
+        $('#linegraphcolor').val(getRandomPresetColor());
+      });
+      $('#cleargraph').click(() => {
+        linegraph.data.datasets = [];
+        linegraph.update();
+      });
+      $('#loglin').click(() => {
+        let checked = $('#loglin').prop("checked");
+        linegraph.options.scales = {
+          yAxes: [{
+            display: true,
+            type: checked ? 'logarithmic' : 'linear'
+          }]
+        }
+        linegraph.update();
+      });
+
+      $('#addbar').click(() => {
+        let sorttype = $('#sorttype').val();
+        let shuffletype = $('#shuffle').val();
+        let length = Math.max(Math.round($('#length').val()),1);
+        let secondary = Math.max(Math.round($('#secondary').val()),2);
+        let color = $('#bargraphcolor').val()+"33";
+
+        let list = shuffle[shuffletype](length);
+        const t0 = performance.now();
+        window[sorttype](list,secondary);
+        const t1 = performance.now();
+
+        let data = analytics.log();
+        bargraph.data.datasets.push({
+          label: sorttype+", "+shuffletype,
+          data: [data.comparisons,data.swaps,data.mainwrites,data.auxwrites,Math.round((t1-t0)*1000)],
+          backgroundColor: color,
+          borderColor: color,
+          borderWidth: 1
+        });
+        bargraph.update();
+
+        $('#bargraphcolor').val(getRandomPresetColor());
+      });
+      $('#clearbars').click(() => {
+        bargraph.data.datasets = [];
+        bargraph.update();
+      });
+    </script>
+  </body>
+</html>

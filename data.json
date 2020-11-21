@@ -1,0 +1,74 @@
+colorpresets = ["#FA8072", "#DC143C", "#FF0000", "#8B0000", "#FF1493", "#C71585", "#FF6347", "#FF4500", "#FFA500", "#FFD700", "#E6E6FA", "#EE82EE", "#FF00FF", "#8A2BE2", "#800080", "#4B0082", "#6A5ACD", "#ADFF2F", "#00FF00", "#00FA9A", "#228B22", "#008000", "#006400", "#66CDAA", "#008080", "#00FFFF", "#7FFFD4", "#4682B4", "#1E90FF", "#0000FF", "#00008B", "#8B4513", "#800000"]
+sorts = [{
+  "name": "BogoSort",
+  "type": "bogo",
+  "performance": "n*n!"
+},{
+  "name": "BubbleBogoSort",
+  "type": "bogo",
+  "performance": ""
+},{
+  "name": "ExchangeBogoSort",
+  "type": "bogo",
+  "performance": ""
+},{
+  "name": "LessBogoSort",
+  "type": "bogo",
+  "performance": ""
+},{
+  "name": "CombBogoSort",
+  "type": "bogo",
+  "performance": ""
+},{
+  "name": "BubbleSort",
+  "type": "exchange",
+  "performance": "n^2"
+},{
+  "name": "CocktailShakerSort",
+  "type": "exchange",
+  "performance": "n^2"
+},{
+  "name": "OddEvenSort",
+  "type": "exchange",
+  "performance": "n^2"
+},{
+  "name": "CombSort",
+  "type": "exchange",
+  "performance": "n^2/2^p"
+},{
+  "name": "GnomeSort",
+  "type": "exchange",
+  "performance": "n^2"
+},{
+  "name": "LLQuickSort",
+  "type": "exchange",
+  "performance": "n log n"
+},{
+  "name": "LRQuickSort",
+  "type": "exchange",
+  "performance": "n log n"
+},{
+  "name": "StableQuickSort",
+  "type": "exchange",
+  "performance": "n log n"
+},{
+  "name": "SelectionSort",
+  "type": "selection",
+  "performance": "n^2"
+},{
+  "name": "DoubleSelectionSort",
+  "type": "selection",
+  "performance": "n^2"
+},{
+  "name": "MaxHeapSort",
+  "type": "selection",
+  "performance": "n log n"
+},{
+  "name": "InsertionSort",
+  "type": "insertion",
+  "performance": "n^2"
+},{
+  "name": "BinaryInsertionSort",
+  "type": "insertion",
+  "performance": "n^2"
+}]
